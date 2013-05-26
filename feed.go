@@ -41,7 +41,7 @@ func (f *Feed) Add(item *Item) {
 	f.Items = append(f.Items, item)
 }
 
-// returns the first non-zero time formatted as a string or "" 
+// returns the first non-zero time formatted as a string or ""
 func anyTimeFormat(format string, times ...time.Time) string {
 	for _, t := range times {
 		if !t.IsZero() {
@@ -58,25 +58,25 @@ type XmlFeed interface {
 
 // turn a feed object (either a Feed, AtomFeed, or RssFeed) into xml
 // returns an error if xml marshaling fails
-func ToXML(feed XmlFeed) (string, error) {
+func ToXML(feed XmlFeed, style string) (string, error) {
 	x := feed.FeedXml()
 	data, err := xml.MarshalIndent(x, "", "  ")
 	if err != nil {
 		return "", err
 	}
 	// strip empty line from default xml header
-	s := xml.Header[:len(xml.Header)-1] + string(data)
+	s := xml.Header + `<?xml-stylesheet href="/statics/css/` + style + `"?>` + string(data)
 	return s, nil
 }
 
 // creates an Atom representation of this feed
 func (f *Feed) ToAtom() (string, error) {
 	a := &Atom{f}
-	return ToXML(a)
+	return ToXML(a, "atom.css")
 }
 
 // creates an Rss representation of this feed
 func (f *Feed) ToRss() (string, error) {
 	r := &Rss{f}
-	return ToXML(r)
+	return ToXML(r, "rss.css")
 }
